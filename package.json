@@ -1,0 +1,29 @@
+{
+  "name": "tempestus-fulgor",
+  "version": "1.0.0",
+  "description": "⚡ The storm knows. — Weather web app",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SirisakUnknowss/tempestus-fulgor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/SirisakUnknowss/tempestus-fulgor/issues"
+  },
+  "homepage": "https://github.com/SirisakUnknowss/tempestus-fulgor#readme",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.9.2",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
+  }
+}
