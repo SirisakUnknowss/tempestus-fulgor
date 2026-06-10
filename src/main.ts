@@ -50,7 +50,7 @@ async function loadWeather(geo: GeoLocation): Promise<void> {
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
-function bindEvents(currentGeo: GeoLocation): void {
+function bindEvents(_currentGeo: GeoLocation): void {
   // Search
   document.getElementById('search-btn')?.addEventListener('click', () => openSearch())
 }

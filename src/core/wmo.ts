@@ -27,7 +27,7 @@ export const WMO_ICONS: Record<WMOCode, WeatherIcon> = {
   99: { day: '⛈️',  night: '⛈️',  label: 'Thunderstorm + heavy hail', bg: 'bg-storm' },
 }
 
-export function getWeatherIcon(code: WMOCode, isDay: boolean): WeatherIcon {
+export function getWeatherIcon(code: WMOCode, _isDay: boolean): WeatherIcon {
   const icon = WMO_ICONS[code]
   if (!icon) return { day: '🌡️', night: '🌡️', label: 'Unknown', bg: 'bg-default' }
   return icon
