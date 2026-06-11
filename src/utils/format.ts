@@ -1,7 +1,7 @@
 import type { TempUnit, SpeedUnit } from '../core/types'
 
 export function formatTemp(celsius: number, unit: TempUnit = 'C'): string {
-  if (unit === 'F') return `${Math.round(celsius * 9 / 5 + 32)}°F`
+  if (unit === 'F') return `${Math.round((celsius * 9) / 5 + 32)}°F`
   return `${Math.round(celsius)}°C`
 }
 
@@ -12,7 +12,7 @@ export function formatWind(kmh: number, unit: SpeedUnit = 'kmh'): string {
 }
 
 export function formatWindDir(deg: number): string {
-  const dirs = ['N','NE','E','SE','S','SW','W','NW']
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
   return dirs[Math.round(deg / 45) % 8]
 }
 

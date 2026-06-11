@@ -1,10 +1,9 @@
-import type { WeatherData, WeatherCurrent, WeatherHourly, WeatherDaily } from './types'
+import type { WeatherData, WeatherCurrent, WeatherHourly, WeatherDaily, AirQuality } from './types'
 
 const CACHE_TTL = 10 * 60 * 1000 // 10 minutes
-const CACHE_KEY = (lat: number, lon: number) =>
-  `tf_weather_${lat.toFixed(2)}_${lon.toFixed(2)}`
+const CACHE_KEY = (lat: number, lon: number) => `tf_weather_${lat.toFixed(2)}_${lon.toFixed(2)}`
 
-// ─── Fetch Open-Meteo ─────────────────────────────────────────────────────────
+// ─── Fetch Open-Meteo & Air Quality ───────────────────────────────────────────
 
 export async function fetchWeather(lat: number, lon: number): Promise<WeatherData> {
   // check cache first
@@ -25,12 +24,9 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
       'uv_index',
       'is_day',
     ].join(','),
-    hourly: [
-      'temperature_2m',
-      'precipitation_probability',
-      'weathercode',
-      'wind_speed_10m',
-    ].join(','),
+    hourly: ['temperature_2m', 'precipitation_probability', 'weathercode', 'wind_speed_10m'].join(
+      ','
+    ),
     daily: [
       'weathercode',
       'temperature_2m_max',
@@ -47,21 +43,28 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherDat
     forecast_hours: '24',
   })
 
-  const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`)
-  if (!res.ok) throw new Error(`Weather fetch failed: ${res.status}`)
-  const raw = await res.json()
+  const weatherUrl = `https://api.open-meteo.com/v1/forecast?${params}`
+  const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi,pm2_5,pm10`
 
-  const data = parseResponse(raw)
+  const [weatherRes, aqiRes] = await Promise.all([fetch(weatherUrl), fetch(aqiUrl)])
+
+  if (!weatherRes.ok) throw new Error(`Weather fetch failed: ${weatherRes.status}`)
+  if (!aqiRes.ok) throw new Error(`Air Quality fetch failed: ${aqiRes.status}`)
+
+  const [weatherRaw, aqiRaw] = await Promise.all([weatherRes.json(), aqiRes.json()])
+
+  const data = parseResponse(weatherRaw, aqiRaw)
   saveCache(lat, lon, data)
   return data
 }
 
 // ─── Parse ────────────────────────────────────────────────────────────────────
 
-function parseResponse(raw: any): WeatherData {
+function parseResponse(raw: any, aqiRaw: any): WeatherData {
   const c = raw.current
   const h = raw.hourly
   const d = raw.daily
+  const aq = aqiRaw.current
 
   const current: WeatherCurrent = {
     temperature: c.temperature_2m,
@@ -95,7 +98,13 @@ function parseResponse(raw: any): WeatherData {
     uvIndexMax: d.uv_index_max,
   }
 
-  return { current, hourly, daily, fetchedAt: Date.now() }
+  const aqi: AirQuality = {
+    aqi: aq.us_aqi,
+    pm25: aq.pm2_5,
+    pm10: aq.pm10,
+  }
+
+  return { current, hourly, daily, aqi, fetchedAt: Date.now() }
 }
 
 // ─── Cache ────────────────────────────────────────────────────────────────────

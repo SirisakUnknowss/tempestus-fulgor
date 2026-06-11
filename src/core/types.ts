@@ -10,13 +10,13 @@ export interface GeoLocation {
 // ─── Weather ──────────────────────────────────────────────────────────────────
 
 export interface WeatherCurrent {
-  temperature: number        // °C
-  feelsLike: number          // °C
-  humidity: number           // %
-  weatherCode: number        // WMO code
-  windSpeed: number          // km/h
-  windDirection: number      // °
-  pressure: number           // hPa
+  temperature: number // °C
+  feelsLike: number // °C
+  humidity: number // %
+  weatherCode: number // WMO code
+  windSpeed: number // km/h
+  windDirection: number // °
+  pressure: number // hPa
   uvIndex: number
   isDay: boolean
 }
@@ -41,11 +41,18 @@ export interface WeatherDaily {
   uvIndexMax: number[]
 }
 
+export interface AirQuality {
+  aqi: number
+  pm25: number
+  pm10: number
+}
+
 export interface WeatherData {
   current: WeatherCurrent
   hourly: WeatherHourly
   daily: WeatherDaily
-  fetchedAt: number          // timestamp for cache
+  aqi: AirQuality
+  fetchedAt: number // timestamp for cache
 }
 
 // ─── WMO Weather Codes ────────────────────────────────────────────────────────
@@ -54,7 +61,7 @@ export interface WeatherIcon {
   day: string
   night: string
   label: string
-  bg: string                 // CSS class สำหรับ dynamic background
+  bg: string // CSS class สำหรับ dynamic background
 }
 
 export type WMOCode = number

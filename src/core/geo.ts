@@ -28,8 +28,7 @@ export async function reverseGeocode(lat: number, lon: number): Promise<GeoLocat
   if (!res.ok) throw new Error('Geocode failed')
   const data = await res.json()
   const addr = data.address ?? {}
-  const city =
-    addr.city ?? addr.town ?? addr.village ?? addr.county ?? addr.state ?? 'Unknown'
+  const city = addr.city ?? addr.town ?? addr.village ?? addr.county ?? addr.state ?? 'Unknown'
   const country = addr.country_code?.toUpperCase() ?? ''
   return { lat, lon, city, country }
 }
@@ -61,5 +60,9 @@ export function saveGeoCache(loc: GeoLocation): void {
 export function loadGeoCache(): GeoLocation | null {
   const raw = localStorage.getItem(GEO_CACHE_KEY)
   if (!raw) return null
-  try { return JSON.parse(raw) } catch { return null }
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
 }
