@@ -154,7 +154,7 @@ function openSearch(): void {
 
   closeBtn.addEventListener('click', closeSearch)
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay.firstElementChild) closeSearch()
+    if (e.target === overlay) closeSearch()
   })
 }
 

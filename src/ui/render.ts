@@ -156,23 +156,21 @@ export function renderError(root: HTMLElement, message: string): void {
 export function renderSearch(root: HTMLElement): void {
   const overlay = document.createElement('div')
   overlay.id = 'search-overlay'
-  overlay.className = 'animate-fade-in'
+  overlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex items-start justify-center pt-0 px-0 sm:pt-8 sm:px-6 animate-fade-in'
   overlay.innerHTML = `
-    <div class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-start justify-center pt-0 px-0 sm:pt-8 sm:px-6">
-      <div class="w-full max-w-md bg-[#0a0818]/95 rounded-b-2xl sm:rounded-2xl border-b border-x sm:border border-white/10 overflow-hidden shadow-2xl animate-slide-down">
-        <div class="flex items-center gap-3 p-4 border-b border-white/10">
-          <span>🔍</span>
-          <input
-            id="search-input"
-            type="text"
-            placeholder="Search city..."
-            class="flex-1 bg-transparent outline-none text-white placeholder-white/30 font-mono text-sm"
-            autofocus
-          />
-          <button id="search-close" class="text-white/40 hover:text-white font-mono cursor-pointer">✕</button>
-        </div>
-        <div id="search-results" class="max-h-60 overflow-y-auto scrollbar-none"></div>
+    <div class="w-full max-w-md bg-[#0a0818]/95 rounded-b-2xl sm:rounded-2xl border-b border-x sm:border border-white/10 overflow-hidden shadow-2xl animate-slide-down">
+      <div class="flex items-center gap-3 p-4 border-b border-white/10">
+        <span>🔍</span>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search city..."
+          class="flex-1 bg-transparent outline-none text-white placeholder-white/30 font-mono text-sm"
+          autofocus
+        />
+        <button id="search-close" class="text-white/40 hover:text-white font-mono cursor-pointer">✕</button>
       </div>
+      <div id="search-results" class="max-h-60 overflow-y-auto scrollbar-none"></div>
     </div>
   `
   root.appendChild(overlay)
