@@ -27,7 +27,7 @@ export function renderApp(
   const bgClass = getWeatherIcon(current.weatherCode, current.isDay).bg
 
   root.innerHTML = `
-    <div class="min-h-screen font-sans text-white transition-all duration-1000 ${bgTheme(bgClass, current.isDay)} relative overflow-hidden">
+    <div class="min-h-screen font-sans text-slate-800 transition-all duration-1000 ${bgTheme(bgClass, current.isDay)} relative overflow-hidden">
       <!-- Particle and Storm Overlays -->
       <div id="rain-particles" class="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
       <div id="snow-particles" class="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
@@ -38,18 +38,18 @@ export function renderApp(
         <!-- Header -->
         <header class="flex items-center justify-between px-6 pt-8 pb-4 max-w-2xl mx-auto w-full animate-fade-in-up">
           <div>
-            <p class="font-mono text-xs tracking-[0.2em] uppercase text-white/40">⚡ Tempestus Fulgor</p>
-            <h1 class="text-2xl font-bold mt-1">${geo.city}<span class="text-white/40 font-normal text-base ml-2">${geo.country}</span></h1>
+            <p class="font-mono text-xs tracking-[0.2em] uppercase text-slate-800/40"><i class="ph-duotone ph-lightning"></i> Tempestus Fulgor</p>
+            <h1 class="text-2xl font-bold mt-1">${geo.city}<span class="text-slate-800/40 font-normal text-base ml-2">${geo.country}</span></h1>
           </div>
           <div class="flex items-center gap-2">
-            <button id="temp-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-xs font-mono font-medium border border-white/5 cursor-pointer" title="Toggle Temperature Unit">
+            <button id="temp-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors text-xs font-mono font-medium border border-white/30 cursor-pointer" title="Toggle Temperature Unit">
               ${settings.tempUnit === 'C' ? '°C' : '°F'}
             </button>
-            <button id="speed-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-xs font-mono font-medium border border-white/5 cursor-pointer" title="Toggle Wind Speed Unit">
+            <button id="speed-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors text-xs font-mono font-medium border border-white/30 cursor-pointer" title="Toggle Wind Speed Unit">
               ${settings.speedUnit === 'kmh' ? 'km/h' : settings.speedUnit === 'mph' ? 'mph' : 'm/s'}
             </button>
-            <button id="hamburger-btn" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/5 cursor-pointer text-base" title="Locations Menu">
-              ☰
+            <button id="hamburger-btn" class="p-2.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors border border-white/30 cursor-pointer text-base" title="Locations Menu">
+              <i class="ph-duotone ph-list"></i>
             </button>
           </div>
         </header>
@@ -60,34 +60,34 @@ export function renderApp(
             <span class="text-8xl leading-none select-none">${icon}</span>
             <div>
               <div id="current-temp-val" class="text-7xl font-bold leading-none">${formatTemp(current.temperature, settings.tempUnit)}</div>
-              <div class="text-white/60 text-sm mt-1">Feels like ${formatTemp(current.feelsLike, settings.tempUnit)}</div>
+              <div class="text-slate-800/60 text-sm mt-1">Feels like ${formatTemp(current.feelsLike, settings.tempUnit)}</div>
             </div>
           </div>
-          <p class="text-xl text-white/80 mt-3">${label}</p>
+          <p class="text-xl text-slate-800/80 mt-3">${label}</p>
 
           <!-- Stats row -->
           <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
-            ${statCard('💧', `${current.humidity}%`, 'Humidity')}
-            ${statCard('💨', formatWind(current.windSpeed, settings.speedUnit), `Wind ${formatWindDir(current.windDirection)}`)}
-            ${statCard('🌡️', `${current.pressure}hPa`, 'Pressure')}
-            ${statCard('☀️', `UV ${current.uvIndex}`, 'UV Index')}
+            ${statCard('<i class="ph-duotone ph-drop"></i>', `${current.humidity}%`, 'Humidity')}
+            ${statCard('<i class="ph-duotone ph-wind"></i>', formatWind(current.windSpeed, settings.speedUnit), `Wind ${formatWindDir(current.windDirection)}`)}
+            ${statCard('<i class="ph-duotone ph-thermometer"></i>', `${current.pressure}hPa`, 'Pressure')}
+            ${statCard('<i class="ph-duotone ph-sun"></i>', `UV ${current.uvIndex}`, 'UV Index')}
             ${aqiCard(data.aqi)}
           </div>
 
           <!-- Sunrise / Sunset -->
           <div class="flex gap-4 mt-4">
-            <div class="flex items-center gap-2 text-sm text-white/60 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 backdrop-blur-md">
-              <span>🌅</span> ${formatTime(daily.sunrise[0])}
+            <div class="flex items-center gap-2 text-sm text-slate-800/60 bg-white/40 px-3 py-1.5 rounded-xl border border-white/30 backdrop-blur-md">
+              <span><i class="ph-duotone ph-sun-horizon"></i></span> ${formatTime(daily.sunrise[0])}
             </div>
-            <div class="flex items-center gap-2 text-sm text-white/60 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 backdrop-blur-md">
-              <span>🌇</span> ${formatTime(daily.sunset[0])}
+            <div class="flex items-center gap-2 text-sm text-slate-800/60 bg-white/40 px-3 py-1.5 rounded-xl border border-white/30 backdrop-blur-md">
+              <span><i class="ph-duotone ph-sun-dim"></i></span> ${formatTime(daily.sunset[0])}
             </div>
           </div>
         </section>
 
         <!-- Hourly -->
         <section class="px-6 pb-4 max-w-2xl mx-auto w-full animate-fade-in-up delay-200">
-          <p class="font-mono text-xs tracking-widest text-white/40 uppercase mb-3">Next 24 hours</p>
+          <p class="font-mono text-xs tracking-widest text-slate-800/40 uppercase mb-3">Next 24 hours</p>
           <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
             ${hourly.time
               .slice(0, 24)
@@ -98,14 +98,14 @@ export function renderApp(
 
         <!-- Daily -->
         <section class="px-6 pb-10 max-w-2xl mx-auto w-full animate-fade-in-up delay-300">
-          <p class="font-mono text-xs tracking-widest text-white/40 uppercase mb-3">7-Day Forecast</p>
+          <p class="font-mono text-xs tracking-widest text-slate-800/40 uppercase mb-3">7-Day Forecast</p>
           <div class="space-y-2">
             ${daily.time.map((t, i) => dailyRow(t, daily, i, current.isDay, settings)).join('')}
           </div>
         </section>
 
         <!-- Footer -->
-        <footer class="text-center pb-8 font-mono text-xs text-white/20 animate-fade-in-up delay-350">
+        <footer class="text-center pb-8 font-mono text-xs text-slate-800/20 animate-fade-in-up delay-350">
           The storm knows.
         </footer>
       </div>
@@ -130,9 +130,9 @@ export function renderApp(
 
 export function renderLoading(root: HTMLElement): void {
   root.innerHTML = `
-    <div class="min-h-screen flex flex-col items-center justify-center bg-[#030308] text-white">
-      <div class="text-6xl mb-4 animate-pulse select-none">⚡</div>
-      <p class="font-mono text-sm text-white/40 tracking-widest animate-pulse">READING THE SKY...</p>
+    <div class="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800">
+      <div class="text-6xl mb-4 animate-pulse select-none"><i class="ph-duotone ph-lightning"></i></div>
+      <p class="font-mono text-sm text-slate-800/40 tracking-widest animate-pulse">READING THE SKY...</p>
     </div>
   `
 }
@@ -141,9 +141,9 @@ export function renderLoading(root: HTMLElement): void {
 
 export function renderError(root: HTMLElement, message: string): void {
   root.innerHTML = `
-    <div class="min-h-screen flex flex-col items-center justify-center bg-[#030308] text-white gap-4 px-6 text-center">
-      <div class="text-5xl animate-bounce select-none">🌩️</div>
-      <p class="text-white/60 font-mono text-sm max-w-md leading-relaxed">${message}</p>
+    <div class="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800 gap-4 px-6 text-center">
+      <div class="text-5xl animate-bounce select-none"><i class="ph-duotone ph-cloud-lightning"></i></div>
+      <p class="text-slate-800/60 font-mono text-sm max-w-md leading-relaxed">${message}</p>
       <button id="retry-btn" class="mt-4 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 transition-colors font-mono text-sm border border-indigo-400/30 cursor-pointer shadow-lg shadow-indigo-600/20">
         Try again
       </button>
@@ -160,22 +160,22 @@ export function renderDrawer(root: HTMLElement): void {
   backdrop.id = 'drawer-backdrop'
   backdrop.className = 'drawer-backdrop fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex justify-start'
   backdrop.innerHTML = `
-    <div id="drawer-container" class="drawer-content w-full max-w-xs sm:max-w-sm bg-[#0a0818]/98 border-r border-white/10 h-full flex flex-col shadow-2xl">
+    <div id="drawer-container" class="drawer-content w-full max-w-xs sm:max-w-sm bg-white/90 border-r border-white/40 h-full flex flex-col shadow-2xl">
       <!-- Drawer Header -->
-      <div class="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/5">
-        <h2 class="text-lg font-bold tracking-wide text-white">Locations</h2>
-        <button id="drawer-close" class="text-white/40 hover:text-white text-lg font-mono cursor-pointer p-1">✕</button>
+      <div class="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/30">
+        <h2 class="text-lg font-bold tracking-wide text-slate-800">Locations</h2>
+        <button id="drawer-close" class="text-slate-800/40 hover:text-slate-800 text-lg font-mono cursor-pointer p-1">✕</button>
       </div>
 
       <!-- Search Section inside Drawer -->
-      <div class="px-4 py-3 border-b border-white/5">
-        <div class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-xl border border-white/10">
-          <span class="text-sm">🔍</span>
+      <div class="px-4 py-3 border-b border-white/30">
+        <div class="flex items-center gap-2 px-3 py-2 bg-white/40 rounded-xl border border-white/40">
+          <span class="text-sm"><i class="ph-duotone ph-magnifying-glass"></i></span>
           <input
             id="drawer-search-input"
             type="text"
             placeholder="Search city..."
-            class="flex-1 bg-transparent outline-none text-white placeholder-white/30 font-mono text-sm"
+            class="flex-1 bg-transparent outline-none text-slate-800 placeholder-white/30 font-mono text-sm"
             autocomplete="off"
           />
         </div>
@@ -210,7 +210,7 @@ export function renderLocationCardHTML(
 
     return `
       <div 
-        class="location-card flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all cursor-pointer group"
+        class="location-card flex items-center justify-between p-4 rounded-2xl bg-white/40 hover:bg-white/50 border border-white/30 hover:border-white/40 transition-all cursor-pointer group"
         data-lat="${loc.lat}"
         data-lon="${loc.lon}"
         data-city="${loc.city}"
@@ -218,26 +218,26 @@ export function renderLocationCardHTML(
       >
         <div class="flex-1 min-w-0 pr-2">
           <div class="flex items-center gap-1.5">
-            <span class="text-sm font-semibold text-white truncate">${loc.city}</span>
-            ${isCurrent ? '<span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-md font-medium shrink-0">📍 Current</span>' : ''}
+            <span class="text-sm font-semibold text-slate-800 truncate">${loc.city}</span>
+            ${isCurrent ? '<span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-md font-medium shrink-0"><i class="ph-duotone ph-map-pin"></i> Current</span>' : ''}
           </div>
-          <p class="text-xs text-white/40 mt-0.5 truncate">${loc.country || 'Unknown Country'}</p>
-          <p class="text-xs text-white/60 mt-1 truncate">${label}</p>
+          <p class="text-xs text-slate-800/40 mt-0.5 truncate">${loc.country || 'Unknown Country'}</p>
+          <p class="text-xs text-slate-800/60 mt-1 truncate">${label}</p>
         </div>
         
         <div class="flex items-center gap-3 shrink-0">
           <div class="text-right">
             <span class="text-2xl select-none block leading-none">${icon}</span>
-            <span class="text-base font-bold font-mono text-white mt-1 block leading-none">${temp}</span>
+            <span class="text-base font-bold font-mono text-slate-800 mt-1 block leading-none">${temp}</span>
           </div>
           ${!isCurrent ? `
             <button 
-              class="unpin-btn p-1.5 rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+              class="unpin-btn p-1.5 rounded-lg text-slate-800/30 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
               data-city="${loc.city}"
               data-country="${loc.country}"
               title="Delete location"
             >
-              🗑️
+              <i class="ph-duotone ph-trash"></i>
             </button>
           ` : ''}
         </div>
@@ -246,14 +246,14 @@ export function renderLocationCardHTML(
   } else {
     // Shimmering skeleton loader
     return `
-      <div class="shimmer p-4 rounded-2xl border border-white/5 flex items-center justify-between h-[76px]">
+      <div class="shimmer p-4 rounded-2xl border border-white/30 flex items-center justify-between h-[76px]">
         <div class="space-y-2 flex-1">
-          <div class="h-4 bg-white/10 rounded-md w-1/2"></div>
-          <div class="h-3 bg-white/10 rounded-md w-1/3"></div>
+          <div class="h-4 bg-white/50 rounded-md w-1/2"></div>
+          <div class="h-3 bg-white/50 rounded-md w-1/3"></div>
         </div>
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-white/10 rounded-full"></div>
-          <div class="w-8 h-6 bg-white/10 rounded-md"></div>
+          <div class="w-8 h-8 bg-white/50 rounded-full"></div>
+          <div class="w-8 h-6 bg-white/50 rounded-md"></div>
         </div>
       </div>
     `
@@ -264,10 +264,10 @@ export function renderLocationCardHTML(
 
 function statCard(icon: string, value: string, label: string): string {
   return `
-    <div class="bg-white/10 rounded-2xl p-3 text-center border border-white/5 backdrop-blur-md flex flex-col justify-between">
+    <div class="bg-white/50 rounded-2xl p-3 text-center border border-white/30 backdrop-blur-md flex flex-col justify-between">
       <div class="text-xl mb-1 select-none">${icon}</div>
       <div class="font-mono text-sm font-semibold">${value}</div>
-      <div class="text-white/40 text-xs mt-0.5">${label}</div>
+      <div class="text-slate-800/40 text-xs mt-0.5">${label}</div>
     </div>
   `
 }
@@ -282,10 +282,10 @@ function getAqiInfo(aqi: number) {
 function aqiCard(aqi: AirQuality): string {
   const info = getAqiInfo(aqi.aqi)
   return `
-    <div class="bg-white/10 rounded-2xl p-3 text-center border border-white/5 backdrop-blur-md flex flex-col justify-between col-span-2 md:col-span-1">
-      <div class="text-xl mb-1 select-none">🍃</div>
+    <div class="bg-white/50 rounded-2xl p-3 text-center border border-white/30 backdrop-blur-md flex flex-col justify-between col-span-2 md:col-span-1">
+      <div class="text-xl mb-1 select-none"><i class="ph-duotone ph-leaf"></i></div>
       <div class="font-mono text-sm font-semibold">${aqi.aqi} <span class="text-[10px] ${info.color} font-sans block leading-none mt-0.5">${info.label}</span></div>
-      <div class="text-white/40 text-xs mt-0.5">Air Quality</div>
+      <div class="text-slate-800/40 text-xs mt-0.5">Air Quality</div>
     </div>
   `
 }
@@ -299,11 +299,11 @@ function hourlyCard(
   const icon = getIcon(hourly.weatherCode[i], true)
   const rain = hourly.precipitationProbability[i]
   return `
-    <div class="flex-shrink-0 flex flex-col items-center gap-1 bg-white/10 rounded-2xl px-4 py-3 min-w-[68px] border border-white/5 backdrop-blur-md">
-      <span class="font-mono text-xs text-white/50">${formatHour(time)}</span>
+    <div class="flex-shrink-0 flex flex-col items-center gap-1 bg-white/50 rounded-2xl px-4 py-3 min-w-[68px] border border-white/30 backdrop-blur-md">
+      <span class="font-mono text-xs text-slate-800/50">${formatHour(time)}</span>
       <span class="text-2xl select-none">${icon}</span>
       <span class="font-mono text-sm font-medium">${formatTemp(hourly.temperature[i], settings.tempUnit)}</span>
-      ${rain > 0 ? `<span class="font-mono text-xs text-blue-300 font-semibold">${rain}%</span>` : '<span class="text-xs text-white/0 select-none">0%</span>'}
+      ${rain > 0 ? `<span class="font-mono text-xs text-blue-300 font-semibold">${rain}%</span>` : '<span class="text-xs text-slate-800/0 select-none">0%</span>'}
     </div>
   `
 }
@@ -318,18 +318,18 @@ function dailyRow(
   const icon = getIcon(daily.weatherCode[i], isDay)
   const isToday = i === 0
   return `
-    <div class="flex items-center gap-4 px-4 py-3 rounded-2xl ${isToday ? 'bg-white/15' : 'bg-white/5'} hover:bg-white/10 transition-colors border border-white/5 backdrop-blur-md">
-      <span class="w-16 font-mono text-sm ${isToday ? 'text-white font-semibold' : 'text-white/60'}">${formatDay(time, true)}</span>
+    <div class="flex items-center gap-4 px-4 py-3 rounded-2xl ${isToday ? 'bg-white/60' : 'bg-white/40'} hover:bg-white/50 transition-colors border border-white/30 backdrop-blur-md">
+      <span class="w-16 font-mono text-sm ${isToday ? 'text-slate-800 font-semibold' : 'text-slate-800/60'}">${formatDay(time, true)}</span>
       <span class="text-2xl select-none">${icon}</span>
-      <span class="flex-1 text-sm text-white/60 truncate">${getLabel(daily.weatherCode[i])}</span>
+      <span class="flex-1 text-sm text-slate-800/60 truncate">${getLabel(daily.weatherCode[i])}</span>
       ${
         daily.precipitationProbabilityMax[i] > 10
           ? `<span class="font-mono text-xs text-blue-300 font-semibold">${daily.precipitationProbabilityMax[i]}%</span>`
           : ''
       }
       <div class="font-mono text-sm text-right">
-        <span class="text-white font-medium">${formatTemp(daily.tempMax[i], settings.tempUnit)}</span>
-        <span class="text-white/40 ml-2 font-medium">${formatTemp(daily.tempMin[i], settings.tempUnit)}</span>
+        <span class="text-slate-800 font-medium">${formatTemp(daily.tempMax[i], settings.tempUnit)}</span>
+        <span class="text-slate-800/40 ml-2 font-medium">${formatTemp(daily.tempMin[i], settings.tempUnit)}</span>
       </div>
     </div>
   `
@@ -338,14 +338,14 @@ function dailyRow(
 function bgTheme(bg: string, isDay: boolean): string {
   const themes: Record<string, string> = {
     'bg-clear-day': isDay
-      ? 'bg-gradient-to-b from-sky-500 via-blue-400 to-indigo-600'
-      : 'bg-gradient-to-b from-[#020617] via-[#0a0a2e] to-[#030308]',
-    'bg-cloudy': 'bg-gradient-to-b from-slate-600 via-slate-700 to-slate-900',
-    'bg-fog': 'bg-gradient-to-b from-slate-500 via-slate-600 to-slate-800',
-    'bg-rain': 'bg-gradient-to-b from-slate-700 via-blue-900 to-slate-900',
-    'bg-storm': 'bg-gradient-to-b from-[#0a0a0a] via-[#1a0a2e] to-[#030308]',
-    'bg-snow': 'bg-gradient-to-b from-slate-800 via-blue-950 to-slate-900',
-    'bg-default': 'bg-gradient-to-b from-[#030308] to-[#0a0818]',
+      ? 'bg-gradient-to-b from-blue-100 via-pink-100 to-orange-100'
+      : 'bg-gradient-to-b from-indigo-200 via-purple-200 to-pink-200',
+    'bg-cloudy': 'bg-gradient-to-b from-slate-100 via-gray-200 to-zinc-200',
+    'bg-fog': 'bg-gradient-to-b from-gray-100 via-stone-200 to-gray-200',
+    'bg-rain': 'bg-gradient-to-b from-blue-100 via-indigo-100 to-slate-200',
+    'bg-storm': 'bg-gradient-to-b from-purple-200 via-indigo-200 to-slate-300',
+    'bg-snow': 'bg-gradient-to-b from-blue-50 via-cyan-100 to-white',
+    'bg-default': 'bg-gradient-to-b from-pink-100 to-blue-100',
   }
   return themes[bg] ?? themes['bg-default']
 }

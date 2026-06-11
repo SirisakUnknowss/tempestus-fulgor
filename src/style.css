@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  font-family: 'Inter', sans-serif;
-  color-scheme: dark;
+  font-family: 'Quicksand', sans-serif;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
-  background: #030308;
+  background: #fdfbfb;
   overflow-x: hidden;
 }
 
 .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Mali', cursive;
 }
 
 /* Hide scrollbar but allow scroll */
@@ -146,7 +146,7 @@ body {
   }
 }
 .shimmer {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.09) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 25%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
 }
