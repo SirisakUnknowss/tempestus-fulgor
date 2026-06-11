@@ -1,8 +1,9 @@
 import './style.css'
 import { getGPS, reverseGeocode, searchCity, saveGeoCache, loadGeoCache } from './core/geo'
 import { fetchWeather } from './core/weather'
-import { renderApp, renderLoading, renderError, renderSearch } from './ui/render'
+import { renderApp, renderLoading, renderError, renderDrawer, renderLocationCardHTML } from './ui/render'
 import type { GeoLocation, AppSettings, WeatherData } from './core/types'
+import { getPins, addPin, removePin, isPinned } from './core/pins'
 
 // ─── App State ────────────────────────────────────────────────────────────────
 
@@ -12,6 +13,10 @@ const settings: AppSettings = {
 }
 
 const root = document.getElementById('app')!
+
+let currentGPSGeo: GeoLocation | null = null
+let currentGPSWeather: WeatherData | null = null
+const pinWeatherMap: Record<string, WeatherData> = {}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -28,7 +33,18 @@ async function init(): Promise<void> {
       saveGeoCache(geo)
     }
 
+    currentGPSGeo = geo
     await loadWeather(geo)
+
+    // Trigger silent update for GPS in background if we loaded from cache
+    if (localStorage.getItem('tf_geo')) {
+      getGPS()
+        .then((coords) => reverseGeocode(coords.lat, coords.lon))
+        .then((gps) => {
+          currentGPSGeo = gps
+        })
+        .catch((err) => console.warn('Silent GPS update failed:', err))
+    }
   } catch (err) {
     console.error(err)
     renderError(root, 'Could not get your location.<br>Allow location access and try again.')
@@ -51,8 +67,8 @@ async function loadWeather(geo: GeoLocation): Promise<void> {
 // ─── Events ───────────────────────────────────────────────────────────────────
 
 function bindEvents(geo: GeoLocation, data: WeatherData): void {
-  // Search
-  document.getElementById('search-btn')?.addEventListener('click', () => openSearch())
+  // Hamburger Locations Menu
+  document.getElementById('hamburger-btn')?.addEventListener('click', () => openDrawer())
 
   // Temperature unit toggle
   document.getElementById('temp-toggle-btn')?.addEventListener('click', () => {
@@ -74,62 +90,162 @@ function bindEvents(geo: GeoLocation, data: WeatherData): void {
   })
 }
 
-function openSearch(): void {
-  renderSearch(root)
+function openDrawer(): void {
+  renderDrawer(root)
 
-  const input = document.getElementById('search-input') as HTMLInputElement
-  const results = document.getElementById('search-results')!
-  const closeBtn = document.getElementById('search-close')!
-  const overlay = document.getElementById('search-overlay')!
+  const backdrop = document.getElementById('drawer-backdrop')!
+  const closeBtn = document.getElementById('drawer-close')!
+  const searchInput = document.getElementById('drawer-search-input') as HTMLInputElement
+  const searchResults = document.getElementById('drawer-search-results')!
+  const locationsList = document.getElementById('drawer-locations-list')!
 
-  // Explicitly focus input
-  if (input) {
-    input.focus()
+  // Focus search input
+  if (searchInput) {
+    searchInput.focus()
   }
 
   let debounce: ReturnType<typeof setTimeout>
 
-  const closeSearch = () => {
-    overlay.remove()
+  const closeDrawer = () => {
+    backdrop.classList.remove('open')
     document.removeEventListener('keydown', handleKeyDown)
+    setTimeout(() => {
+      backdrop.remove()
+    }, 300)
   }
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      closeSearch()
+      closeDrawer()
     }
   }
 
   document.addEventListener('keydown', handleKeyDown)
+  closeBtn.addEventListener('click', closeDrawer)
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeDrawer()
+  })
 
-  input.addEventListener('input', () => {
+  // Render Locations List (Current + Pinned)
+  const drawLocationsList = () => {
+    const pins = getPins()
+    let html = ''
+
+    // 1. Current Location card
+    if (currentGPSGeo) {
+      html += `<div id="current-location-card-container">`
+      html += renderLocationCardHTML(currentGPSGeo, true, currentGPSWeather, settings)
+      html += `</div>`
+    } else {
+      html += `<div id="current-location-card-container">`
+      html += renderLocationCardHTML(
+        { lat: 0, lon: 0, city: 'Current Location', country: '' },
+        true,
+        null,
+        settings
+      )
+      html += `</div>`
+    }
+
+    // 2. Pinned Location cards
+    pins.forEach((pin) => {
+      const roundedLat = pin.lat.toFixed(2)
+      const roundedLon = pin.lon.toFixed(2)
+      const key = `${roundedLat}_${roundedLon}`
+      const weather = pinWeatherMap[key] || null
+
+      html += `<div id="pin-card-container-${roundedLat}-${roundedLon}">`
+      html += renderLocationCardHTML(pin, false, weather, settings)
+      html += `</div>`
+    })
+
+    locationsList.innerHTML = html
+
+    // Asynchronously fetch weather data for pinned cards
+    pins.forEach(async (pin) => {
+      const roundedLat = pin.lat.toFixed(2)
+      const roundedLon = pin.lon.toFixed(2)
+      const key = `${roundedLat}_${roundedLon}`
+
+      if (!pinWeatherMap[key]) {
+        try {
+          const weather = await fetchWeather(pin.lat, pin.lon)
+          pinWeatherMap[key] = weather
+
+          // Update card in place
+          const cardContainer = document.getElementById(
+            `pin-card-container-${roundedLat}-${roundedLon}`
+          )
+          if (cardContainer) {
+            cardContainer.innerHTML = renderLocationCardHTML(pin, false, weather, settings)
+          }
+        } catch (err) {
+          console.error(`Failed to fetch weather for pin ${pin.city}:`, err)
+        }
+      }
+    })
+
+    // Fetch weather for Current GPS Location if needed
+    if (currentGPSGeo && !currentGPSWeather) {
+      fetchWeather(currentGPSGeo.lat, currentGPSGeo.lon)
+        .then((weather) => {
+          currentGPSWeather = weather
+          const cardContainer = document.getElementById('current-location-card-container')
+          if (cardContainer && currentGPSGeo) {
+            cardContainer.innerHTML = renderLocationCardHTML(currentGPSGeo, true, weather, settings)
+          }
+        })
+        .catch((err) => console.error('Failed to fetch weather for current location:', err))
+    }
+  }
+
+  // Draw list initial state
+  drawLocationsList()
+
+  // Handle Input for Search
+  searchInput.addEventListener('input', () => {
     clearTimeout(debounce)
     debounce = setTimeout(async () => {
-      const q = input.value.trim()
+      const q = searchInput.value.trim()
       if (q.length < 2) {
-        results.innerHTML = ''
+        searchResults.innerHTML = ''
         return
       }
 
-      results.innerHTML = `<div class="p-4 text-white/40 font-mono text-sm">Searching...</div>`
+      searchResults.innerHTML = `<div class="p-3 text-white/40 font-mono text-xs">Searching...</div>`
       const cities = await searchCity(q)
 
       if (cities.length === 0) {
-        results.innerHTML = `<div class="p-4 text-white/40 font-mono text-sm">No results</div>`
+        searchResults.innerHTML = `<div class="p-3 text-white/40 font-mono text-xs">No results</div>`
         return
       }
 
-      results.innerHTML = cities
+      searchResults.innerHTML = cities
         .map(
-          (c, i) => `
-        <button
-          class="search-result w-full text-left px-4 py-3 hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
-          data-index="${i}"
-        >
-          <span class="text-white text-sm">${c.city}</span>
-          <span class="text-white/40 text-xs ml-2">${c.country}</span>
-        </button>
-      `
+          (c, i) => {
+            const pinned = isPinned(c.city, c.country)
+            return `
+              <div class="search-result flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors">
+                <button
+                  class="search-select-btn flex-1 text-left cursor-pointer"
+                  data-index="${i}"
+                >
+                  <span class="text-white text-sm block font-medium truncate">${c.city}</span>
+                  <span class="text-white/45 text-xs block truncate">${c.country}</span>
+                </button>
+                <button
+                  class="pin-toggle-btn p-1.5 rounded-lg text-xs font-semibold ${
+                    pinned
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/20'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 border border-white/5'
+                  } transition-all cursor-pointer shrink-0"
+                  data-index="${i}"
+                >
+                  ${pinned ? '📌 Pinned' : '＋ Pin'}
+                </button>
+              </div>
+            `
+          }
         )
         .join('')
 
@@ -138,23 +254,79 @@ function openSearch(): void {
     }, 300)
   })
 
-  results.addEventListener('click', async (e) => {
-    const btn = (e.target as HTMLElement).closest('.search-result') as HTMLElement | null
-    if (!btn) return
-    const idx = parseInt(btn.dataset.index ?? '0')
-    const cities: GeoLocation[] = (window as any).__tfSearchResults ?? []
-    const selected = cities[idx]
-    if (!selected) return
+  // Handle Search Result Selection & Pinning
+  searchResults.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement
 
-    saveGeoCache(selected)
-    closeSearch()
-    renderLoading(root)
-    await loadWeather(selected)
+    // Pin Toggle
+    const pinBtn = target.closest('.pin-toggle-btn') as HTMLButtonElement | null
+    if (pinBtn) {
+      const idx = parseInt(pinBtn.dataset.index!)
+      const cities: GeoLocation[] = (window as any).__tfSearchResults ?? []
+      const selected = cities[idx]
+      if (!selected) return
+
+      const pinned = isPinned(selected.city, selected.country)
+      if (!pinned) {
+        addPin(selected)
+        pinBtn.className =
+          'pin-toggle-btn p-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 shrink-0'
+        pinBtn.innerText = '📌 Pinned'
+        drawLocationsList()
+      } else {
+        removePin(selected.city, selected.country)
+        pinBtn.className =
+          'pin-toggle-btn p-1.5 rounded-lg text-xs font-semibold bg-white/10 text-white/70 hover:bg-white/20 border border-white/5 cursor-pointer shrink-0'
+        pinBtn.innerText = '＋ Pin'
+        drawLocationsList()
+      }
+      return
+    }
+
+    // City Selection
+    const selectBtn = target.closest('.search-select-btn') as HTMLButtonElement | null
+    if (selectBtn) {
+      const idx = parseInt(selectBtn.dataset.index!)
+      const cities: GeoLocation[] = (window as any).__tfSearchResults ?? []
+      const selected = cities[idx]
+      if (!selected) return
+
+      saveGeoCache(selected)
+      closeDrawer()
+      renderLoading(root)
+      await loadWeather(selected)
+    }
   })
 
-  closeBtn.addEventListener('click', closeSearch)
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeSearch()
+  // Handle Card Click (Selection) & Unpinning inside the list
+  locationsList.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement
+
+    // Unpin button
+    const unpinBtn = target.closest('.unpin-btn') as HTMLButtonElement | null
+    if (unpinBtn) {
+      e.stopPropagation()
+      const city = unpinBtn.dataset.city!
+      const country = unpinBtn.dataset.country!
+      removePin(city, country)
+      drawLocationsList()
+      return
+    }
+
+    // Location Card Click
+    const card = target.closest('.location-card') as HTMLElement | null
+    if (card) {
+      const lat = parseFloat(card.dataset.lat!)
+      const lon = parseFloat(card.dataset.lon!)
+      const city = card.dataset.city!
+      const country = card.dataset.country!
+
+      const selected: GeoLocation = { lat, lon, city, country }
+      saveGeoCache(selected)
+      closeDrawer()
+      renderLoading(root)
+      await loadWeather(selected)
+    }
   })
 }
 

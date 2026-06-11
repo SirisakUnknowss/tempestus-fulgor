@@ -48,8 +48,8 @@ export function renderApp(
             <button id="speed-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-xs font-mono font-medium border border-white/5 cursor-pointer" title="Toggle Wind Speed Unit">
               ${settings.speedUnit === 'kmh' ? 'km/h' : settings.speedUnit === 'mph' ? 'mph' : 'm/s'}
             </button>
-            <button id="search-btn" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/5 cursor-pointer" title="Search city">
-              🔍
+            <button id="hamburger-btn" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors border border-white/5 cursor-pointer text-base" title="Locations Menu">
+              ☰
             </button>
           </div>
         </header>
@@ -151,29 +151,113 @@ export function renderError(root: HTMLElement, message: string): void {
   `
 }
 
-// ─── Search UI ────────────────────────────────────────────────────────────────
+// ─── Locations Drawer UI ──────────────────────────────────────────────────────
 
-export function renderSearch(root: HTMLElement): void {
-  const overlay = document.createElement('div')
-  overlay.id = 'search-overlay'
-  overlay.className = 'fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex items-start justify-center pt-0 px-0 sm:pt-8 sm:px-6 animate-fade-in'
-  overlay.innerHTML = `
-    <div class="w-full max-w-md bg-[#0a0818]/95 rounded-b-2xl sm:rounded-2xl border-b border-x sm:border border-white/10 overflow-hidden shadow-2xl animate-slide-down">
-      <div class="flex items-center gap-3 p-4 border-b border-white/10">
-        <span>🔍</span>
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Search city..."
-          class="flex-1 bg-transparent outline-none text-white placeholder-white/30 font-mono text-sm"
-          autofocus
-        />
-        <button id="search-close" class="text-white/40 hover:text-white font-mono cursor-pointer">✕</button>
+export function renderDrawer(root: HTMLElement): void {
+  if (document.getElementById('drawer-backdrop')) return
+
+  const backdrop = document.createElement('div')
+  backdrop.id = 'drawer-backdrop'
+  backdrop.className = 'drawer-backdrop fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex justify-start'
+  backdrop.innerHTML = `
+    <div id="drawer-container" class="drawer-content w-full max-w-xs sm:max-w-sm bg-[#0a0818]/98 border-r border-white/10 h-full flex flex-col shadow-2xl">
+      <!-- Drawer Header -->
+      <div class="flex items-center justify-between px-5 pt-6 pb-4 border-b border-white/5">
+        <h2 class="text-lg font-bold tracking-wide text-white">Locations</h2>
+        <button id="drawer-close" class="text-white/40 hover:text-white text-lg font-mono cursor-pointer p-1">✕</button>
       </div>
-      <div id="search-results" class="max-h-60 overflow-y-auto scrollbar-none"></div>
+
+      <!-- Search Section inside Drawer -->
+      <div class="px-4 py-3 border-b border-white/5">
+        <div class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-xl border border-white/10">
+          <span class="text-sm">🔍</span>
+          <input
+            id="drawer-search-input"
+            type="text"
+            placeholder="Search city..."
+            class="flex-1 bg-transparent outline-none text-white placeholder-white/30 font-mono text-sm"
+            autocomplete="off"
+          />
+        </div>
+        <!-- Search Results (hidden when empty) -->
+        <div id="drawer-search-results" class="mt-2 max-h-48 overflow-y-auto scrollbar-none divide-y divide-white/5"></div>
+      </div>
+
+      <!-- Locations List (Current + Pinned) -->
+      <div id="drawer-locations-list" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-none">
+        <!-- Rendered dynamically -->
+      </div>
     </div>
   `
-  root.appendChild(overlay)
+  root.appendChild(backdrop)
+
+  // Trigger transition
+  setTimeout(() => {
+    backdrop.classList.add('open')
+  }, 10)
+}
+
+export function renderLocationCardHTML(
+  loc: GeoLocation,
+  isCurrent: boolean,
+  weather: WeatherData | null,
+  settings: AppSettings
+): string {
+  if (weather) {
+    const icon = getIcon(weather.current.weatherCode, weather.current.isDay)
+    const temp = formatTemp(weather.current.temperature, settings.tempUnit)
+    const label = getLabel(weather.current.weatherCode)
+
+    return `
+      <div 
+        class="location-card flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all cursor-pointer group"
+        data-lat="${loc.lat}"
+        data-lon="${loc.lon}"
+        data-city="${loc.city}"
+        data-country="${loc.country}"
+      >
+        <div class="flex-1 min-w-0 pr-2">
+          <div class="flex items-center gap-1.5">
+            <span class="text-sm font-semibold text-white truncate">${loc.city}</span>
+            ${isCurrent ? '<span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded-md font-medium shrink-0">📍 Current</span>' : ''}
+          </div>
+          <p class="text-xs text-white/40 mt-0.5 truncate">${loc.country || 'Unknown Country'}</p>
+          <p class="text-xs text-white/60 mt-1 truncate">${label}</p>
+        </div>
+        
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="text-right">
+            <span class="text-2xl select-none block leading-none">${icon}</span>
+            <span class="text-base font-bold font-mono text-white mt-1 block leading-none">${temp}</span>
+          </div>
+          ${!isCurrent ? `
+            <button 
+              class="unpin-btn p-1.5 rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+              data-city="${loc.city}"
+              data-country="${loc.country}"
+              title="Delete location"
+            >
+              🗑️
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `
+  } else {
+    // Shimmering skeleton loader
+    return `
+      <div class="shimmer p-4 rounded-2xl border border-white/5 flex items-center justify-between h-[76px]">
+        <div class="space-y-2 flex-1">
+          <div class="h-4 bg-white/10 rounded-md w-1/2"></div>
+          <div class="h-3 bg-white/10 rounded-md w-1/3"></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-white/10 rounded-full"></div>
+          <div class="w-8 h-6 bg-white/10 rounded-md"></div>
+        </div>
+      </div>
+    `
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
