@@ -158,8 +158,8 @@ export function renderSearch(root: HTMLElement): void {
   overlay.id = 'search-overlay'
   overlay.className = 'animate-fade-in'
   overlay.innerHTML = `
-    <div class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-start justify-center pt-8 px-6">
-      <div class="w-full max-w-md bg-[#0a0818]/95 rounded-2xl border border-white/10 overflow-hidden shadow-2xl animate-slide-down">
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-start justify-center pt-0 px-0 sm:pt-8 sm:px-6">
+      <div class="w-full max-w-md bg-[#0a0818]/95 rounded-b-2xl sm:rounded-2xl border-b border-x sm:border border-white/10 overflow-hidden shadow-2xl animate-slide-down">
         <div class="flex items-center gap-3 p-4 border-b border-white/10">
           <span>🔍</span>
           <input
