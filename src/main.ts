@@ -1,7 +1,7 @@
 import './style.css'
 import { getGPS, reverseGeocode, searchCity, saveGeoCache, loadGeoCache } from './core/geo'
 import { fetchWeather } from './core/weather'
-import { renderApp, renderLoading, renderError, renderDrawer, renderLocationCardHTML } from './ui/render'
+import { renderApp, renderLoading, renderError, renderDrawer, renderLocationCardHTML, renderDetailsDrawer } from './ui/render'
 import type { GeoLocation, AppSettings, WeatherData } from './core/types'
 import { getPins, addPin, removePin, isPinned } from './core/pins'
 
@@ -67,6 +67,12 @@ async function loadWeather(geo: GeoLocation): Promise<void> {
 // ─── Events ───────────────────────────────────────────────────────────────────
 
 function bindEvents(geo: GeoLocation, data: WeatherData): void {
+
+  // Details Modal
+  document.getElementById('details-btn')?.addEventListener('click', () => {
+    renderDetailsDrawer(root, data, settings)
+  })
+
   // Hamburger Locations Menu
   document.getElementById('hamburger-btn')?.addEventListener('click', () => openDrawer())
 

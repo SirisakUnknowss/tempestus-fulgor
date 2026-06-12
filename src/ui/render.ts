@@ -4,6 +4,9 @@ import {
   formatTemp,
   formatDay,
   formatHour,
+  formatWind,
+  formatWindDir,
+  formatTime
 } from '../utils/format'
 
 // ─── Animation States ─────────────────────────────────────────────────────────
@@ -58,7 +61,7 @@ export function renderApp(
               <span class="bg-white/20 px-3 py-1.5 rounded-full">รู้สึก ${formatTemp(current.feelsLike, settings.tempUnit)}</span>
             </div>
             <!-- Big cute icon SVG -->
-            <img src="./lightning.svg" class="absolute -top-10 -right-6 w-48 h-48 drop-shadow-2xl select-none pointer-events-none" alt="Weather" />
+            <img src="./lightning.svg" class="absolute -top-10 -right-6 w-[140px] h-[140px] drop-shadow-2xl select-none pointer-events-none" alt="Weather" />
           </div>
         </section>
 
@@ -412,4 +415,89 @@ function initLightningFlash(code: number): void {
   }
 
   lightningTimeout = setTimeout(flash, 2000 + Math.random() * 3000)
+}
+
+export function renderDetailsDrawer(root: HTMLElement, data: WeatherData, settings: AppSettings): void {
+  const backdrop = document.createElement('div')
+  backdrop.id = 'details-backdrop'
+  backdrop.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] opacity-0 transition-opacity flex items-end sm:items-center justify-center'
+
+  const { current, daily } = data
+
+  const getAqiInfo = (aqi: number) => {
+    if (aqi <= 50) return { label: 'ดี', color: 'text-emerald-500' }
+    if (aqi <= 100) return { label: 'ปานกลาง', color: 'text-amber-500' }
+    if (aqi <= 150) return { label: 'เริ่มมีผลกระทบ', color: 'text-orange-500' }
+    return { label: 'มีผลกระทบ', color: 'text-rose-500' }
+  }
+  const aqi = getAqiInfo(data.aqi.aqi)
+
+  backdrop.innerHTML = `
+    <div class="bg-white w-full sm:max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl transform translate-y-full sm:translate-y-4 sm:scale-95 transition-transform duration-300 relative">
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+      <button id="details-close" class="absolute top-5 right-5 w-8 h-8 flex items-center justify-center bg-slate-100 text-slate-400 rounded-full hover:bg-slate-200 transition-colors">
+        <i class="ph-bold ph-x"></i>
+      </button>
+
+      <h2 class="text-xl font-bold text-slate-800 mb-6 px-2">รายละเอียดอากาศ</h2>
+
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="bg-blue-50/50 rounded-2xl p-4 flex flex-col items-center text-center">
+          <i class="ph-duotone ph-drop text-3xl text-blue-400 mb-2"></i>
+          <span class="text-xs text-slate-500 mb-1">ความชื้น</span>
+          <span class="font-bold text-slate-800 text-lg">${current.humidity}%</span>
+        </div>
+        <div class="bg-emerald-50/50 rounded-2xl p-4 flex flex-col items-center text-center">
+          <i class="ph-duotone ph-wind text-3xl text-emerald-400 mb-2"></i>
+          <span class="text-xs text-slate-500 mb-1">ลม (${formatWindDir(current.windDirection)})</span>
+          <span class="font-bold text-slate-800 text-lg">${formatWind(current.windSpeed, settings.speedUnit)}</span>
+        </div>
+        <div class="bg-purple-50/50 rounded-2xl p-4 flex flex-col items-center text-center">
+          <i class="ph-duotone ph-gauge text-3xl text-purple-400 mb-2"></i>
+          <span class="text-xs text-slate-500 mb-1">ความกดอากาศ</span>
+          <span class="font-bold text-slate-800 text-lg">${current.pressure} hPa</span>
+        </div>
+        <div class="bg-orange-50/50 rounded-2xl p-4 flex flex-col items-center text-center">
+          <i class="ph-duotone ph-sun text-3xl text-orange-400 mb-2"></i>
+          <span class="text-xs text-slate-500 mb-1">UV Index</span>
+          <span class="font-bold text-slate-800 text-lg">${current.uvIndex}</span>
+        </div>
+        <div class="bg-rose-50/50 rounded-2xl p-4 flex flex-col items-center text-center col-span-2">
+          <i class="ph-duotone ph-leaf text-3xl ${aqi.color} mb-2"></i>
+          <span class="text-xs text-slate-500 mb-1">คุณภาพอากาศ (AQI: ${data.aqi.aqi})</span>
+          <span class="font-bold ${aqi.color} text-lg">${aqi.label}</span>
+        </div>
+      </div>
+
+      <div class="flex gap-4 px-2">
+        <div class="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-4 py-2.5 rounded-xl flex-1 justify-center">
+          <i class="ph-duotone ph-sun-horizon text-orange-400 text-lg"></i> ${formatTime(daily.sunrise[0])}
+        </div>
+        <div class="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-4 py-2.5 rounded-xl flex-1 justify-center">
+          <i class="ph-duotone ph-sun-dim text-indigo-400 text-lg"></i> ${formatTime(daily.sunset[0])}
+        </div>
+      </div>
+    </div>
+  `
+
+  root.appendChild(backdrop)
+
+  // animate in
+  requestAnimationFrame(() => {
+    backdrop.classList.add('opacity-100')
+    const sheet = backdrop.querySelector('div')
+    sheet?.classList.remove('translate-y-full', 'sm:translate-y-4', 'sm:scale-95')
+  })
+
+  const closeDrawer = () => {
+    backdrop.classList.remove('opacity-100')
+    const sheet = backdrop.querySelector('div')
+    sheet?.classList.add('translate-y-full', 'sm:translate-y-4', 'sm:scale-95')
+    setTimeout(() => backdrop.remove(), 300)
+  }
+
+  backdrop.querySelector('#details-close')?.addEventListener('click', closeDrawer)
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) closeDrawer()
+  })
 }
