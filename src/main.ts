@@ -218,11 +218,11 @@ function openDrawer(): void {
         return
       }
 
-      searchResults.innerHTML = `<div class="p-3 text-white/40 font-mono text-xs">Searching...</div>`
+      searchResults.innerHTML = `<div class="p-3 text-slate-500 font-mono text-xs">Searching...</div>`
       const cities = await searchCity(q)
 
       if (cities.length === 0) {
-        searchResults.innerHTML = `<div class="p-3 text-white/40 font-mono text-xs">No results</div>`
+        searchResults.innerHTML = `<div class="p-3 text-slate-500 font-mono text-xs">No results</div>`
         return
       }
 
@@ -231,19 +231,19 @@ function openDrawer(): void {
           (c, i) => {
             const pinned = isPinned(c.city, c.country)
             return `
-              <div class="search-result flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors">
+              <div class="search-result flex items-center justify-between px-3 py-2.5 hover:bg-slate-100 transition-colors">
                 <button
                   class="search-select-btn flex-1 text-left cursor-pointer"
                   data-index="${i}"
                 >
-                  <span class="text-white text-sm block font-medium truncate">${c.city}</span>
-                  <span class="text-white/45 text-xs block truncate">${c.country}</span>
+                  <span class="text-slate-800 text-sm block font-medium truncate">${c.city}</span>
+                  <span class="text-slate-500 text-xs block truncate">${c.country}</span>
                 </button>
                 <button
                   class="pin-toggle-btn p-1.5 rounded-lg text-xs font-semibold ${
                     pinned
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/20'
-                      : 'bg-white/10 text-white/70 hover:bg-white/20 border border-white/5'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
                   } transition-all cursor-pointer shrink-0"
                   data-index="${i}"
                 >
@@ -282,7 +282,7 @@ function openDrawer(): void {
       } else {
         removePin(selected.city, selected.country)
         pinBtn.className =
-          'pin-toggle-btn p-1.5 rounded-lg text-xs font-semibold bg-white/10 text-white/70 hover:bg-white/20 border border-white/5 cursor-pointer shrink-0'
+          'pin-toggle-btn p-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200 cursor-pointer shrink-0'
         pinBtn.innerText = '＋ Pin'
         drawLocationsList()
       }

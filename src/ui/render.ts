@@ -22,7 +22,7 @@ export function renderApp(
   settings: AppSettings
 ): void {
   const { current, hourly, daily } = data
-  
+  const icon = getIcon(current.weatherCode, current.isDay)
   const label = getLabel(current.weatherCode)
 
   root.innerHTML = `
@@ -61,7 +61,7 @@ export function renderApp(
               <span class="bg-white/20 px-3 py-1.5 rounded-full">รู้สึก ${formatTemp(current.feelsLike, settings.tempUnit)}</span>
             </div>
             <!-- Big cute icon SVG -->
-            <img src="./lightning.svg" class="absolute -top-10 -right-6 w-[140px] h-[140px] drop-shadow-2xl select-none pointer-events-none" alt="Weather" />
+            <div class="absolute -top-2 right-2 text-[100px] leading-none drop-shadow-2xl select-none pointer-events-none">${icon}</div>
           </div>
         </section>
 
@@ -150,7 +150,7 @@ export function renderDrawer(root: HTMLElement): void {
             id="drawer-search-input"
             type="text"
             placeholder="Search city..."
-            class="flex-1 bg-transparent outline-none text-slate-800 placeholder-white/30 font-mono text-sm"
+            class="flex-1 bg-transparent outline-none text-slate-800 placeholder-slate-400 font-mono text-sm"
             autocomplete="off"
           />
         </div>
