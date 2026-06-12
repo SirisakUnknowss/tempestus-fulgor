@@ -15,6 +15,17 @@ let lightningTimeout: ReturnType<typeof setTimeout> | null = null
 
 // ─── Root render ──────────────────────────────────────────────────────────────
 
+
+function getSvgIcon(code: number, isDay: boolean): string {
+  if (code === 0) return isDay ? 'sun.svg' : 'moon.svg'
+  if (code >= 1 && code <= 3) return 'cloud.svg'
+  if (code === 45 || code === 48) return 'cloud.svg'
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain.svg'
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow.svg'
+  if (code >= 95 && code <= 99) return 'lightning.svg'
+  return 'cloud.svg'
+}
+
 export function renderApp(
   root: HTMLElement,
   geo: GeoLocation,
@@ -22,7 +33,6 @@ export function renderApp(
   settings: AppSettings
 ): void {
   const { current, hourly, daily } = data
-  const icon = getIcon(current.weatherCode, current.isDay)
   const label = getLabel(current.weatherCode)
 
   root.innerHTML = `
@@ -52,7 +62,6 @@ export function renderApp(
         <!-- Current -->
         <section class="px-6 max-w-2xl mx-auto w-full animate-fade-in-up delay-100 relative mt-2">
           <div class="bg-gradient-to-br from-[#8ba1fa] to-[#b39cff] rounded-[2.5rem] p-7 text-white shadow-lg relative h-[220px] flex flex-col justify-center">
-            <p class="text-white/90 font-medium mb-1">ตอนนี้ใน${geo.city}</p>
             <div id="current-temp-val" class="text-[5.5rem] font-bold leading-none mb-2">${formatTemp(current.temperature, settings.tempUnit)}</div>
             <p class="text-white font-medium text-lg mb-4">${label}</p>
             <div class="flex gap-2 text-xs font-medium">
@@ -61,7 +70,7 @@ export function renderApp(
               <span class="bg-white/20 px-3 py-1.5 rounded-full">รู้สึก ${formatTemp(current.feelsLike, settings.tempUnit)}</span>
             </div>
             <!-- Big cute icon SVG -->
-            <div class="absolute -top-2 right-2 text-[100px] leading-none drop-shadow-2xl select-none pointer-events-none">${icon}</div>
+            <img src="./${getSvgIcon(current.weatherCode, current.isDay)}" class="absolute -top-4 -right-2 w-[120px] h-[120px] drop-shadow-2xl select-none pointer-events-none" alt="Weather" />
           </div>
         </section>
 
