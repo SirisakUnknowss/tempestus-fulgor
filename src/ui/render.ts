@@ -1,10 +1,7 @@
-import type { WeatherData, GeoLocation, AppSettings, AirQuality } from '../core/types'
-import { getIcon, getLabel, getWeatherIcon } from '../core/wmo'
+import type { WeatherData, GeoLocation, AppSettings } from '../core/types'
+import { getIcon, getLabel } from '../core/wmo'
 import {
   formatTemp,
-  formatWind,
-  formatWindDir,
-  formatTime,
   formatDay,
   formatHour,
 } from '../utils/format'
@@ -22,105 +19,80 @@ export function renderApp(
   settings: AppSettings
 ): void {
   const { current, hourly, daily } = data
-  const icon = getIcon(current.weatherCode, current.isDay)
+  
   const label = getLabel(current.weatherCode)
-  const bgClass = getWeatherIcon(current.weatherCode, current.isDay).bg
 
   root.innerHTML = `
-    <div class="min-h-screen font-sans text-slate-800 transition-all duration-1000 ${bgTheme(bgClass, current.isDay)} relative overflow-hidden">
-      <!-- Particle and Storm Overlays -->
+    <div class="min-h-screen font-sans text-slate-800 transition-all duration-1000 ${bgTheme('', true)} relative overflow-hidden">
+      <!-- Particle Overlays -->
       <div id="rain-particles" class="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
       <div id="snow-particles" class="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
       <div id="lightning-flash" class="fixed inset-0 pointer-events-none z-20"></div>
 
       <!-- Layout Wrapper -->
-      <div class="relative z-10 flex flex-col min-h-screen justify-between">
+      <div class="relative z-10 flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="flex items-center justify-between px-6 pt-8 pb-4 max-w-2xl mx-auto w-full animate-fade-in-up">
-          <div>
-            <p class="font-mono text-xs tracking-[0.2em] uppercase text-slate-800/40"><i class="ph-duotone ph-lightning"></i> Tempestus Fulgor</p>
-            <h1 class="text-2xl font-bold mt-1">${geo.city}<span class="text-slate-800/40 font-normal text-base ml-2">${geo.country}</span></h1>
+        <header class="flex items-center justify-between px-6 pt-12 pb-4 max-w-2xl mx-auto w-full animate-fade-in-up">
+          <div class="flex items-center gap-1.5 bg-white px-4 py-2.5 rounded-full shadow-sm text-[#ff8e59] font-medium text-sm">
+            <i class="ph-fill ph-map-pin text-lg"></i> <span class="text-slate-700">${geo.city}</span>
           </div>
           <div class="flex items-center gap-2">
-            <button id="temp-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors text-xs font-mono font-medium border border-white/30 cursor-pointer" title="Toggle Temperature Unit">
+            <button id="temp-toggle-btn" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 cursor-pointer font-bold font-mono text-sm" title="Toggle Temp">
               ${settings.tempUnit === 'C' ? '°C' : '°F'}
             </button>
-            <button id="speed-toggle-btn" class="px-2.5 py-1.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors text-xs font-mono font-medium border border-white/30 cursor-pointer" title="Toggle Wind Speed Unit">
-              ${settings.speedUnit === 'kmh' ? 'km/h' : settings.speedUnit === 'mph' ? 'mph' : 'm/s'}
-            </button>
-            <button id="hamburger-btn" class="p-2.5 rounded-xl bg-white/50 hover:bg-white/70 transition-colors border border-white/30 cursor-pointer text-base" title="Locations Menu">
-              <i class="ph-duotone ph-list"></i>
+            <button id="hamburger-btn" class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-slate-400 cursor-pointer" title="Search & Menu">
+              <i class="ph-bold ph-magnifying-glass text-lg"></i>
             </button>
           </div>
         </header>
 
         <!-- Current -->
-        <section class="px-6 py-6 max-w-2xl mx-auto w-full animate-fade-in-up delay-100">
-          <div class="flex items-end gap-4 mb-2">
-            <span class="text-8xl leading-none select-none">${icon}</span>
-            <div>
-              <div id="current-temp-val" class="text-7xl font-bold leading-none">${formatTemp(current.temperature, settings.tempUnit)}</div>
-              <div class="text-slate-800/60 text-sm mt-1">Feels like ${formatTemp(current.feelsLike, settings.tempUnit)}</div>
+        <section class="px-6 max-w-2xl mx-auto w-full animate-fade-in-up delay-100 relative mt-2">
+          <div class="bg-gradient-to-br from-[#8ba1fa] to-[#b39cff] rounded-[2.5rem] p-7 text-white shadow-lg relative h-[220px] flex flex-col justify-center">
+            <p class="text-white/90 font-medium mb-1">ตอนนี้ใน${geo.city}</p>
+            <div id="current-temp-val" class="text-[5.5rem] font-bold leading-none mb-2">${formatTemp(current.temperature, settings.tempUnit)}</div>
+            <p class="text-white font-medium text-lg mb-4">${label}</p>
+            <div class="flex gap-2 text-xs font-medium">
+              <span class="bg-white/20 px-3 py-1.5 rounded-full">▲ ${formatTemp(daily.tempMax[0], settings.tempUnit)}</span>
+              <span class="bg-white/20 px-3 py-1.5 rounded-full">▼ ${formatTemp(daily.tempMin[0], settings.tempUnit)}</span>
+              <span class="bg-white/20 px-3 py-1.5 rounded-full">รู้สึก ${formatTemp(current.feelsLike, settings.tempUnit)}</span>
             </div>
-          </div>
-          <p class="text-xl text-slate-800/80 mt-3">${label}</p>
-
-          <!-- Stats row -->
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
-            ${statCard('<i class="ph-duotone ph-drop"></i>', `${current.humidity}%`, 'Humidity')}
-            ${statCard('<i class="ph-duotone ph-wind"></i>', formatWind(current.windSpeed, settings.speedUnit), `Wind ${formatWindDir(current.windDirection)}`)}
-            ${statCard('<i class="ph-duotone ph-thermometer"></i>', `${current.pressure}hPa`, 'Pressure')}
-            ${statCard('<i class="ph-duotone ph-sun"></i>', `UV ${current.uvIndex}`, 'UV Index')}
-            ${aqiCard(data.aqi)}
-          </div>
-
-          <!-- Sunrise / Sunset -->
-          <div class="flex gap-4 mt-4">
-            <div class="flex items-center gap-2 text-sm text-slate-800/60 bg-white/40 px-3 py-1.5 rounded-xl border border-white/30 backdrop-blur-md">
-              <span><i class="ph-duotone ph-sun-horizon"></i></span> ${formatTime(daily.sunrise[0])}
-            </div>
-            <div class="flex items-center gap-2 text-sm text-slate-800/60 bg-white/40 px-3 py-1.5 rounded-xl border border-white/30 backdrop-blur-md">
-              <span><i class="ph-duotone ph-sun-dim"></i></span> ${formatTime(daily.sunset[0])}
-            </div>
+            <!-- Big cute icon SVG -->
+            <img src="./lightning.svg" class="absolute -top-10 -right-6 w-48 h-48 drop-shadow-2xl select-none pointer-events-none" alt="Weather" />
           </div>
         </section>
 
         <!-- Hourly -->
-        <section class="px-6 pb-4 max-w-2xl mx-auto w-full animate-fade-in-up delay-200">
-          <p class="font-mono text-xs tracking-widest text-slate-800/40 uppercase mb-3">Next 24 hours</p>
-          <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-            ${hourly.time
-              .slice(0, 24)
-              .map((t, i) => hourlyCard(t, hourly, i, settings))
-              .join('')}
+        <section class="px-6 py-6 max-w-2xl mx-auto w-full animate-fade-in-up delay-200">
+          <div class="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 -mx-1 scrollbar-none">
+            ${hourly.time.slice(0, 24).map((t, i) => hourlyCard(t, hourly, i, settings)).join('')}
           </div>
         </section>
 
         <!-- Daily -->
-        <section class="px-6 pb-10 max-w-2xl mx-auto w-full animate-fade-in-up delay-300">
-          <p class="font-mono text-xs tracking-widest text-slate-800/40 uppercase mb-3">7-Day Forecast</p>
-          <div class="space-y-2">
-            ${daily.time.map((t, i) => dailyRow(t, daily, i, current.isDay, settings)).join('')}
+        <section class="px-6 pb-6 max-w-2xl mx-auto w-full animate-fade-in-up delay-300">
+          <div class="bg-white/80 backdrop-blur-md rounded-[2rem] p-5 shadow-sm border border-white/50">
+            <div class="space-y-1">
+              ${daily.time.map((t, i) => dailyRow(t, daily, i, current.isDay, settings)).join('')}
+            </div>
           </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="text-center pb-8 font-mono text-xs text-slate-800/20 animate-fade-in-up delay-350">
-          The storm knows.
-        </footer>
+        <!-- Details Button -->
+        <section class="px-6 pb-12 max-w-2xl mx-auto w-full animate-fade-in-up delay-350">
+          <button id="details-btn" class="w-full py-4 rounded-full bg-gradient-to-r from-[#ffae6e] to-[#ffd06e] text-white font-bold text-lg shadow-md hover:opacity-90 transition-opacity">
+            ดูรายละเอียดอากาศ +
+          </button>
+        </section>
       </div>
     </div>
   `
 
-  // ─── Initialize Animations ──────────────────────────────────────────────────
   initRainParticles(current.weatherCode)
   initSnowParticles(current.weatherCode)
   initLightningFlash(current.weatherCode)
 
-  const endTemp =
-    settings.tempUnit === 'F'
-      ? Math.round((current.temperature * 9) / 5 + 32)
-      : Math.round(current.temperature)
+  const endTemp = settings.tempUnit === 'F' ? Math.round((current.temperature * 9) / 5 + 32) : Math.round(current.temperature)
   setTimeout(() => {
     animateValue('current-temp-val', 0, endTemp, 800, settings.tempUnit)
   }, 50)
@@ -262,33 +234,7 @@ export function renderLocationCardHTML(
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function statCard(icon: string, value: string, label: string): string {
-  return `
-    <div class="bg-white/50 rounded-2xl p-3 text-center border border-white/30 backdrop-blur-md flex flex-col justify-between">
-      <div class="text-xl mb-1 select-none">${icon}</div>
-      <div class="font-mono text-sm font-semibold">${value}</div>
-      <div class="text-slate-800/40 text-xs mt-0.5">${label}</div>
-    </div>
-  `
-}
 
-function getAqiInfo(aqi: number) {
-  if (aqi <= 50) return { label: 'Good', color: 'text-emerald-400' }
-  if (aqi <= 100) return { label: 'Moderate', color: 'text-amber-400' }
-  if (aqi <= 150) return { label: 'Sensitive', color: 'text-orange-400' }
-  return { label: 'Unhealthy', color: 'text-rose-400' }
-}
-
-function aqiCard(aqi: AirQuality): string {
-  const info = getAqiInfo(aqi.aqi)
-  return `
-    <div class="bg-white/50 rounded-2xl p-3 text-center border border-white/30 backdrop-blur-md flex flex-col justify-between col-span-2 md:col-span-1">
-      <div class="text-xl mb-1 select-none"><i class="ph-duotone ph-leaf"></i></div>
-      <div class="font-mono text-sm font-semibold">${aqi.aqi} <span class="text-[10px] ${info.color} font-sans block leading-none mt-0.5">${info.label}</span></div>
-      <div class="text-slate-800/40 text-xs mt-0.5">Air Quality</div>
-    </div>
-  `
-}
 
 function hourlyCard(
   time: string,
@@ -298,12 +244,13 @@ function hourlyCard(
 ): string {
   const icon = getIcon(hourly.weatherCode[i], true)
   const rain = hourly.precipitationProbability[i]
+  const isNow = i === 0
   return `
-    <div class="flex-shrink-0 flex flex-col items-center gap-1 bg-white/50 rounded-2xl px-4 py-3 min-w-[68px] border border-white/30 backdrop-blur-md">
-      <span class="font-mono text-xs text-slate-800/50">${formatHour(time)}</span>
-      <span class="text-2xl select-none">${icon}</span>
-      <span class="font-mono text-sm font-medium">${formatTemp(hourly.temperature[i], settings.tempUnit)}</span>
-      ${rain > 0 ? `<span class="font-mono text-xs text-blue-300 font-semibold">${rain}%</span>` : '<span class="text-xs text-slate-800/0 select-none">0%</span>'}
+    <div class="flex-shrink-0 flex flex-col items-center gap-1.5 ${isNow ? 'bg-white shadow-sm' : 'bg-white/50'} rounded-full px-4 py-5 min-w-[76px] transition-colors">
+      <span class="font-mono text-[11px] ${isNow ? 'text-slate-400 font-semibold' : 'text-slate-400'}">${isNow ? 'ตอนนี้' : formatHour(time)}</span>
+      <span class="text-3xl select-none drop-shadow-sm mt-1">${icon}</span>
+      <span class="font-mono text-[10px] text-blue-400 font-bold h-3">${rain > 0 ? rain + '%' : ''}</span>
+      <span class="font-mono text-lg font-bold text-slate-800 mt-1">${formatTemp(hourly.temperature[i], settings.tempUnit)}</span>
     </div>
   `
 }
@@ -317,37 +264,35 @@ function dailyRow(
 ): string {
   const icon = getIcon(daily.weatherCode[i], isDay)
   const isToday = i === 0
+  const rain = daily.precipitationProbabilityMax[i]
+  
+  // Calculate relative bar position
+  const minOfWeek = Math.min(...daily.tempMin)
+  const maxOfWeek = Math.max(...daily.tempMax)
+  const range = maxOfWeek - minOfWeek
+  const leftPercent = ((daily.tempMin[i] - minOfWeek) / range) * 100
+  const widthPercent = ((daily.tempMax[i] - daily.tempMin[i]) / range) * 100
+  
   return `
-    <div class="flex items-center gap-4 px-4 py-3 rounded-2xl ${isToday ? 'bg-white/60' : 'bg-white/40'} hover:bg-white/50 transition-colors border border-white/30 backdrop-blur-md">
-      <span class="w-16 font-mono text-sm ${isToday ? 'text-slate-800 font-semibold' : 'text-slate-800/60'}">${formatDay(time, true)}</span>
-      <span class="text-2xl select-none">${icon}</span>
-      <span class="flex-1 text-sm text-slate-800/60 truncate">${getLabel(daily.weatherCode[i])}</span>
-      ${
-        daily.precipitationProbabilityMax[i] > 10
-          ? `<span class="font-mono text-xs text-blue-300 font-semibold">${daily.precipitationProbabilityMax[i]}%</span>`
-          : ''
-      }
-      <div class="font-mono text-sm text-right">
-        <span class="text-slate-800 font-medium">${formatTemp(daily.tempMax[i], settings.tempUnit)}</span>
-        <span class="text-slate-800/40 ml-2 font-medium">${formatTemp(daily.tempMin[i], settings.tempUnit)}</span>
+    <div class="flex items-center gap-2 py-2.5 border-b border-slate-100/60 last:border-0">
+      <span class="w-16 font-mono text-[15px] ${isToday ? 'text-slate-800 font-bold' : 'text-slate-700 font-medium'}">${isToday ? 'วันนี้' : formatDay(time, true)}</span>
+      <span class="text-2xl select-none drop-shadow-sm w-8 text-center">${icon}</span>
+      <span class="font-mono text-[11px] text-blue-400 font-bold w-8 text-left">${rain > 0 ? rain + '%' : ''}</span>
+      
+      <span class="text-slate-400 font-mono text-sm font-medium w-8 text-right">${formatTemp(daily.tempMin[i], settings.tempUnit)}</span>
+      
+      <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden mx-2 relative">
+         <div class="absolute h-full bg-gradient-to-r from-blue-300 to-orange-300 rounded-full opacity-80" style="left: ${leftPercent}%; width: ${widthPercent}%;"></div>
       </div>
+      
+      <span class="text-slate-800 font-mono text-base font-bold w-8 text-right">${formatTemp(daily.tempMax[i], settings.tempUnit)}</span>
     </div>
   `
 }
 
-function bgTheme(bg: string, isDay: boolean): string {
-  const themes: Record<string, string> = {
-    'bg-clear-day': isDay
-      ? 'bg-gradient-to-b from-blue-100 via-pink-100 to-orange-100'
-      : 'bg-gradient-to-b from-indigo-200 via-purple-200 to-pink-200',
-    'bg-cloudy': 'bg-gradient-to-b from-slate-100 via-gray-200 to-zinc-200',
-    'bg-fog': 'bg-gradient-to-b from-gray-100 via-stone-200 to-gray-200',
-    'bg-rain': 'bg-gradient-to-b from-blue-100 via-indigo-100 to-slate-200',
-    'bg-storm': 'bg-gradient-to-b from-purple-200 via-indigo-200 to-slate-300',
-    'bg-snow': 'bg-gradient-to-b from-blue-50 via-cyan-100 to-white',
-    'bg-default': 'bg-gradient-to-b from-pink-100 to-blue-100',
-  }
-  return themes[bg] ?? themes['bg-default']
+function bgTheme(_bg: string, _isDay: boolean): string {
+  // Use a global pastel theme like the design
+  return 'bg-gradient-to-b from-[#eef0ff] via-[#f7ebff] to-[#fdfbfb]'
 }
 
 // ─── Animation Utilities ─────────────────────────────────────────────────────
