@@ -498,7 +498,10 @@ export function renderDetailsDrawer(root: HTMLElement, data: WeatherData, settin
     sheet?.classList.remove('translate-y-full', 'sm:translate-y-4', 'sm:scale-95')
   })
 
+  document.body.style.overflow = 'hidden'
+
   const closeDrawer = () => {
+    document.body.style.overflow = ''
     backdrop.classList.remove('opacity-100')
     const sheet = backdrop.querySelector('div')
     sheet?.classList.add('translate-y-full', 'sm:translate-y-4', 'sm:scale-95')

@@ -112,7 +112,10 @@ function openDrawer(): void {
 
   let debounce: ReturnType<typeof setTimeout>
 
+  document.body.style.overflow = 'hidden'
+
   const closeDrawer = () => {
+    document.body.style.overflow = ''
     backdrop.classList.remove('open')
     document.removeEventListener('keydown', handleKeyDown)
     setTimeout(() => {
